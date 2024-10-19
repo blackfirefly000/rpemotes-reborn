@@ -2,7 +2,7 @@ IsUsingBinoculars = false
 if Config.BinocularsEnabled then
     RegisterCommand("binoculars", function()
         UseBinocular()
-    end)
+    end, false)
     TriggerEvent('chat:addSuggestion', '/binoculars', 'Use binoculars', {})
 
 
@@ -15,7 +15,8 @@ if Config.BinocularsEnabled then
     local index = 0
     prop_binoc = nil
     local instructions = true
-
+    local scaleform_bin
+    local scaleform_instructions
     -- INSTRUCTIONAL BUTTONS
 
     function SetupButtons(button)
@@ -35,7 +36,7 @@ if Config.BinocularsEnabled then
             PushScaleformMovieFunctionParameterInt(i - 1)
             ScaleformMovieMethodAddParamPlayerNameString(GetControlInstructionalButton(0, btn.key, true))
             BeginTextCommandScaleformString("STRING")
-            AddTextComponentScaleform(Config.Languages[lang][btn.text])
+            AddTextComponentScaleform(Translate(btn.text))
             EndTextCommandScaleformString()
             PopScaleformMovieFunctionVoid()
         end
@@ -78,7 +79,7 @@ if Config.BinocularsEnabled then
 
                 TaskPlayAnim(PlayerPedId(), "amb@world_human_binoculars@male@idle_a", "idle_c", 5.0, 5.0, -1, 51, 0, 0, 0, 0)
                 PlayAmbientSpeech1(PlayerPedId(), "GENERIC_CURSE_MED", "SPEECH_PARAMS_FORCE")
-                SetCurrentPedWeapon(GetPlayerPed(-1), GetHashKey("WEAPON_UNARMED"), true)
+                SetCurrentPedWeapon(PlayerPedId(), GetHashKey("WEAPON_UNARMED"), true)
 
                 RemoveAnimDict("amb@world_human_binoculars@male@idle_a")
                 SetModelAsNoLongerNeeded("prop_binoc_01")
@@ -87,7 +88,7 @@ if Config.BinocularsEnabled then
             Wait(200)
             SetTimecycleModifier("default")
             SetTimecycleModifierStrength(0.3)
-            local scaleform_bin = RequestScaleformMovie("BINOCULARS")
+            scaleform_bin = RequestScaleformMovie("BINOCULARS")
             while not HasScaleformMovieLoaded(scaleform_bin) do
                 Wait(10)
             end
@@ -115,7 +116,7 @@ if Config.BinocularsEnabled then
                     { key = 47,  text = 'toggle_instructions' }
                 }
             end
-            local scaleform_instructions = SetupButtons(keyList)
+            scaleform_instructions = SetupButtons(keyList)
             -- MAIN LOOP
             while IsUsingBinoculars and not IsEntityDead(PlayerPedId()) and not IsPedSittingInAnyVehicle(PlayerPedId()) do
                 if IsControlJustPressed(0, 177) then
@@ -179,7 +180,8 @@ if Config.BinocularsEnabled then
         ClearTimecycleModifier()
         fov = (fov_max + fov_min) * 0.5
         RenderScriptCams(false, false, 0, 1, 0)
-        SetScaleformMovieAsNoLongerNeeded(scaleform)
+        SetScaleformMovieAsNoLongerNeeded(scaleform_bin)
+        SetScaleformMovieAsNoLongerNeeded(scaleform_instructions)
         DestroyCam(cam, false)
         DeleteEntity(prop_binoc)
         SetNightvision(false)

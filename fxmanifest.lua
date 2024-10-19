@@ -1,42 +1,39 @@
 fx_version 'cerulean'
 game 'gta5'
-description 'rpemotes-reborn'	
-version '1.5.0'
+description 'rpemotes-reborn'
+version '1.7.6'
 
 lua54 'yes'
 use_experimental_fxv2_oal 'yes'
 
+provide "rpemotes"
+
 dependencies {
     -- '/server:7290',
     '/server:6683',
-    '/onesync',
+    '/onesync'
 }
 
--- Remove the following lines if you would like to use the SQL keybinds. Requires oxmysql.
-
---#region oxmysql
-
--- dependency 'oxmysql'
+-- Uncomment the below line if you would like to use the SQL keybinds. Requires oxmysql.
 -- server_script '@oxmysql/lib/MySQL.lua'
 
---#endregion oxmysql
-
-files {
-    'propsets.meta',
+files{
     'conditionalanims.meta',
+    'header.png'
 }
 
-data_file 'AMBIENT_PROP_MODEL_SET_FILE' 'propsets.meta'
 data_file 'CONDITIONAL_ANIMS_FILE' 'conditionalanims.meta'
 
 shared_scripts {
     'config.lua',
-    'Translations.lua',
-    'animals.lua',
+    'locale.lua',
+    'locales/*.lua',
+    'animals.lua'
 }
 
 server_scripts {
     'server/Server.lua',
+    'server/Updates.lua',
     'server/frameworks/*.lua'
 }
 
@@ -62,14 +59,13 @@ client_scripts {
 
 ---- Loads all ytyp files for custom props to stream ---
 ---- You will need to add a data_file 'DLC_ITYP_REQUEST' for your own to work in game ---
-
-data_file 'DLC_ITYP_REQUEST' 'stream/taymckenzienz_rpemotes.ytyp'
+data_file 'DLC_ITYP_REQUEST' 'stream/rpemotesreborn_props.ytyp'
 
 data_file 'DLC_ITYP_REQUEST' 'stream/brummie_props.ytyp'
 
 data_file 'DLC_ITYP_REQUEST' 'stream/bzzz_props.ytyp'
 
-data_file 'DLC_ITYP_REQUEST' 'bzzz_camp_props.ytyp'
+data_file 'DLC_ITYP_REQUEST' 'stream/bzzz_camp_props.ytyp'
 
 data_file 'DLC_ITYP_REQUEST' 'stream/apple_1.ytyp'
 
@@ -86,3 +82,11 @@ data_file 'DLC_ITYP_REQUEST' 'stream/pata_props.ytyp'
 data_file 'DLC_ITYP_REQUEST' 'stream/vedere_props.ytyp'
 
 data_file 'DLC_ITYP_REQUEST' 'stream/pnwsigns.ytyp'
+
+data_file 'DLC_ITYP_REQUEST' 'stream/pprp_icefishing.ytyp'
+
+data_file 'DLC_ITYP_REQUEST' 'stream/scully_props.ytyp'
+
+data_file 'DLC_ITYP_REQUEST' 'stream/samnick_prop_lighter01.ytyp'
+
+data_file 'DLC_ITYP_REQUEST' 'stream/bzzz_murderpack.ytyp'

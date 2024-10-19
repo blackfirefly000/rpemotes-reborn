@@ -1,3 +1,5 @@
+LocalPlayer.state:set('canEmote', true, true) -- Allow emotes to be played by default
+
 -- You can edit this function to add support for your favorite notification system
 function SimpleNotify(message)
     if Config.NotificationsAsChatMessage then
@@ -9,9 +11,9 @@ function SimpleNotify(message)
     end
 end
 
-function DebugPrint(args)
+function DebugPrint(...)
     if Config.DebugDisplay then
-        print(args)
+        print(...)
     end
 end
 
@@ -139,13 +141,13 @@ function NearbysOnCommand(source, args, raw)
         NearbysCommand = NearbysCommand .. "" .. a .. ", "
     end
     EmoteChatMessage(NearbysCommand)
-    EmoteChatMessage(Config.Languages[lang]['emotemenucmd'])
+    EmoteChatMessage(Translate('emotemenucmd'))
 end
 
 function GetClosestPlayer()
     local players = GetPlayers()
     local closestDistance = -1
-    local closestPlayer = -1
+    local closestPlayer
     local ply = PlayerPedId()
     local plyCoords = GetEntityCoords(ply, 0)
 
@@ -177,7 +179,7 @@ function GetPlayers()
 end
 
 ---Function that'll check if player is already proning, using news cam or else
----@param ignores? array|nil key string is the ignored value
+---@param ignores? table | nil key string is the ignored value
 function isInActionWithErrorMessage(ignores)
     DebugPrint(ignores)
     DebugPrint('IsProne', IsProne)
@@ -186,17 +188,17 @@ function isInActionWithErrorMessage(ignores)
     if (ignores == nil) then ignores = {} end
 
     if not ignores['IsProne'] and IsProne then
-        EmoteChatMessage(Config.Languages[lang]['no_anim_crawling'])
+        EmoteChatMessage(Translate('no_anim_crawling'))
         return true
     end
     if not ignores['IsUsingNewscam'] and IsUsingNewscam then
         -- TODO: use specific error message
-        EmoteChatMessage(Config.Languages[lang]['no_anim_right_now'])
+        EmoteChatMessage(Translate('no_anim_right_now'))
         return true
     end
     if not ignores['IsUsingBinoculars'] and IsUsingBinoculars then
         -- TODO: use specific error message
-        EmoteChatMessage(Config.Languages[lang]['no_anim_right_now'])
+        EmoteChatMessage(Translate('no_anim_right_now'))
         return true
     end
 
@@ -206,100 +208,108 @@ end
 
 
 ----------------------------------------------------------------------
-
 ShowPed = false
 
-ShowPedMenu = function(zoom)
-    if Config.PreviewPed then
-        if not ShowPed then
-            CreateThread(function()
-                -- clonedPed = CreatePed(26, GetEntityModel(PlayerPedId()), nil, nil, nil, 0, true, false)
-                clonedPed = CreatePed(26, GetEntityModel(PlayerPedId()), nil, nil, nil, 0, false, false)
-                ClonePedToTarget(PlayerPedId(), clonedPed)
-                
-                SetEntityCollision(clonedPed, false, false)
-                SetEntityInvincible(clonedPed, true)
-                SetEntityLocallyVisible(clonedPed)
+function ShowPedMenu(zoom)
+    if not Config.PreviewPed then return end
 
-                NetworkSetEntityInvisibleToNetwork(clonedPed, true)
-                SetEntityCanBeDamaged(clonedPed, false)
-                SetBlockingOfNonTemporaryEvents(clonedPed, true)
-                SetEntityAlpha(clonedPed, 254)
+    if not ShowPed then
+        CreateThread(function()
+            clonedPed = CreatePed(26, GetEntityModel(PlayerPedId()), nil, nil, nil, 0, false, false)
+            ClonePedToTarget(PlayerPedId(), clonedPed)
 
-                ShowPed = true
-        
-                local positionBuffer = {}
-                local bufferSize = 5
-                
-                if not zoom then 
-                    while ShowPed do 
-                        local world, normal =  GetWorldCoordFromScreenCoord(0.65135417461395, 0.77) --  GetWorldCoordFromScreenCoord(0.67135417461395, 0.7787036895752)
-                        local depth = 3.5
-                        local target = world + normal * depth
-                        local camRot = GetGameplayCamRot(2)
-            
-                        table.insert(positionBuffer, target)
-                        if #positionBuffer > bufferSize then
-                            table.remove(positionBuffer, 1)
-                        end
-            
-                        local averagedTarget = vector3(0, 0, 0)
-                        for _, position in ipairs(positionBuffer) do
-                            averagedTarget = averagedTarget + position
-                        end
-                        averagedTarget = averagedTarget / #positionBuffer
-                    
-                        SetEntityCoords(clonedPed, averagedTarget.x, averagedTarget.y, averagedTarget.z, false, false, false, true)
-                        SetEntityHeading(clonedPed, camRot.z + 170.0)
-                        SetEntityRotation(clonedPed, camRot.x*(-1), 0, camRot.z + 170.0, false, false)
+            SetEntityCollision(clonedPed, false, false)
+            SetEntityInvincible(clonedPed, true)
+            SetEntityLocallyVisible(clonedPed)
 
-                        Wait(4)
+            NetworkSetEntityInvisibleToNetwork(clonedPed, true)
+            SetEntityCanBeDamaged(clonedPed, false)
+            SetBlockingOfNonTemporaryEvents(clonedPed, true)
+            SetEntityAlpha(clonedPed, 254, false)
+
+            ShowPed = true
+
+            local positionBuffer = {}
+            local bufferSize = 5
+
+            if not zoom then
+                while ShowPed do
+                    local screencoordsX, screencoordsY = 0.65135417461395, 0.77
+                    if Config.MenuPosition == "left" then
+                        screencoordsX = 1.0 - screencoordsX
                     end
-                else 
-                    while ShowPed do 
-                        local world, normal = GetWorldCoordFromScreenCoord(0.6, 1.9)
-                        local depth = 2.0
-                        local target = world + normal * depth
-                        local camRot = GetGameplayCamRot(2)
-            
-                        table.insert(positionBuffer, target)
-                        if #positionBuffer > bufferSize then
-                            table.remove(positionBuffer, 1)
-                        end
-            
-                        local averagedTarget = vector3(0, 0, 0)
-                        for _, position in ipairs(positionBuffer) do
-                            averagedTarget = averagedTarget + position
-                        end
-                        averagedTarget = averagedTarget / #positionBuffer
-            
-                        SetEntityCoords(clonedPed, averagedTarget.x, averagedTarget.y, averagedTarget.z, false, false, false, true)
-                        SetEntityHeading(clonedPed, camRot.z + 170.0)
-                        SetEntityRotation(clonedPed, camRot.x*(-1), 0, camRot.z + 170.0, false, false)
-        
-                        Wait(4)
+                    local world, normal =  GetWorldCoordFromScreenCoord(screencoordsX, screencoordsY) --  GetWorldCoordFromScreenCoord(0.67135417461395, 0.7787036895752)
+                    local depth = 3.5
+                    local target = world + normal * depth
+                    local camRot = GetGameplayCamRot(2)
+
+                    table.insert(positionBuffer, target)
+                    if #positionBuffer > bufferSize then
+                        table.remove(positionBuffer, 1)
                     end
+
+                    local averagedTarget = vector3(0, 0, 0)
+                    for _, position in ipairs(positionBuffer) do
+                        averagedTarget = averagedTarget + position
+                    end
+                    averagedTarget = averagedTarget / #positionBuffer
+
+                    SetEntityCoords(clonedPed, averagedTarget.x, averagedTarget.y, averagedTarget.z, false, false, false, true)
+                    local heading_offset = Config.MenuPosition == "left" and 170.0 or 190.0
+                    SetEntityHeading(clonedPed, camRot.z + heading_offset)
+                    SetEntityRotation(clonedPed, camRot.x*(-1), 0, camRot.z + 170.0, 2, false)
+
+                    Wait(4)
                 end
-            end)
-        end
+            else
+                while ShowPed do
+                    local screencoordsX, screencoordsY = 0.6, 1.9
+                    if Config.MenuPosition == "left" then
+                        screencoordsX = 1.0 - screencoordsX
+                    end
+                    local world, normal = GetWorldCoordFromScreenCoord(0.6, 1.9)
+                    local depth = 2.0
+                    local target = world + normal * depth
+                    local camRot = GetGameplayCamRot(2)
+
+                    table.insert(positionBuffer, target)
+                    if #positionBuffer > bufferSize then
+                        table.remove(positionBuffer, 1)
+                    end
+
+                    local averagedTarget = vector3(0, 0, 0)
+                    for _, position in ipairs(positionBuffer) do
+                        averagedTarget = averagedTarget + position
+                    end
+                    averagedTarget = averagedTarget / #positionBuffer
+
+                    SetEntityCoords(clonedPed, averagedTarget.x, averagedTarget.y, averagedTarget.z, false, false, false, true)
+                    local heading_offset = Config.MenuPosition == "left" and 170.0 or 190.0
+                    SetEntityHeading(clonedPed, camRot.z + heading_offset)
+                    SetEntityRotation(clonedPed, camRot.x*(-1), 0, camRot.z + 170.0, 2, false)
+
+                    Wait(4)
+                end
+            end
+        end)
     end
 end
 
-ClosePedMenu = function()
-    if Config.PreviewPed then
-        if clonedPed then
-            ShowPed = false
-            ClearPedTaskPreview()
-            DeleteEntity(clonedPed)
-        end
+function ClosePedMenu()
+    if not Config.PreviewPed then return end
+
+    if clonedPed then
+        ShowPed = false
+        ClearPedTaskPreview()
+        DeleteEntity(clonedPed)
     end
 end
 
-ClearPedTaskPreview = function()
-    if Config.PreviewPed then
-        if clonedPed then
-            DestroyAllProps(true)
-            ClearPedTasksImmediately(clonedPed)
-        end
+function ClearPedTaskPreview()
+    if not Config.PreviewPed then return end
+
+    if clonedPed then
+        DestroyAllProps(true)
+        ClearPedTasksImmediately(clonedPed)
     end
 end
